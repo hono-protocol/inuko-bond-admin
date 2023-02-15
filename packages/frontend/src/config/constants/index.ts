@@ -213,23 +213,23 @@ export const INUKO_TAX = 0.12;
 
 const aggregatorAddress = {
   97: "0xDdbC4118aC6367e4bA4Fbda60A719b2b32E10D4a",
-  56: "",
+  56: "0xc75cd11ccC9459E9A740B177316B2d0Cdb4ccb63",
 };
 const expiryTeller = {
   97: "0x7EEf2d5385525BdcD7E261fAb1507B39Aa2F8F4A",
-  56: "",
+  56: "0x8c439E28788Ae4a398b9153BdEB804f5821Cd731",
 };
 const expirySda = {
   97: "0xB720a4F8256C71D470d1d1186DE50D624A336E76",
-  56: "",
+  56: "0x03B95716e39bc4b554Fb25feb62cEEDA59c440Ba",
 };
 const fixedTermTeller = {
   97: "0xEAF9cEFAA448236161bb8a4D32404840bDd501EB",
-  56: "",
+  56: "0xaa5cd63ED1DD43211937e7540fC7c87a2203A32a",
 };
 const fixedTermSda = {
   97: "0x28F96390670aC4051358fDc22fF67F2B64e7D7e8",
-  56: "",
+  56: "0x71fED2e47c3CE5122FBCd23cF272Ee5E4175cFFD",
 };
 export const AGGREGATOR_ADDRESS =
   aggregatorAddress[process.env.REACT_APP_CHAIN_ID];
