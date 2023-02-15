@@ -62,6 +62,9 @@ const Create: React.FC = () => {
   const [vestPeriod, setVestPeriod] = useState(14);
   const [bondDelay, setBondDelay] = useState(24 * 60 * 60); // 1 day
   const [rate, setRate] = useState(new BigNumber(0));
+  const [callback, setCallback] = useState(
+    "0x0000000000000000000000000000000000000000"
+  );
   const { toastError, toastSuccess } = useToast();
   const { account } = useActiveWeb3React();
   const approved = useGetAmount(
@@ -118,6 +121,9 @@ const Create: React.FC = () => {
       case "bond-vesting-period":
         func = setVestPeriod;
         break;
+      case "callback":
+        func = setCallback;
+        break;
     }
 
     func?.(e.target.value);
@@ -155,6 +161,9 @@ const Create: React.FC = () => {
       return false;
     }
     if (bondDelay === undefined) {
+      return false;
+    }
+    if (!callback) {
       return false;
     }
     return true;
@@ -202,7 +211,7 @@ const Create: React.FC = () => {
         [
           payoutToken,
           quoteToken,
-          "0x0000000000000000000000000000000000000000",
+          callback,
           capToken === "quote",
           getDecimalAmount(
             new BigNumber(cap),
@@ -228,7 +237,7 @@ const Create: React.FC = () => {
       toastSuccess("Done!!!");
     } catch (err) {
       console.log("err", err);
-      toastError(err?.toString());
+      toastError("Execution revert!");
     }
   };
 
@@ -598,6 +607,19 @@ const Create: React.FC = () => {
                   // isWarning={!isAddressValid}
                   onChange={handleInput("bond-delay")}
                   type="number"
+                />
+              </Box>
+            </Flex>
+            <Flex py="1rem">
+              <Box flex="1">
+                <Label>{t("Callback")}</Label>
+                <Input
+                  id="callback"
+                  scale="lg"
+                  value={callback}
+                  autoComplete="off"
+                  isWarning={!callback}
+                  onChange={handleInput("callback")}
                 />
               </Box>
             </Flex>
