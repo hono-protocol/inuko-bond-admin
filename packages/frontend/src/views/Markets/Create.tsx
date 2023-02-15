@@ -65,6 +65,7 @@ const Create: React.FC = () => {
   const [callback, setCallback] = useState(
     "0x0000000000000000000000000000000000000000"
   );
+  const [debt, setDebt] = useState<any>();
   const { toastError, toastSuccess } = useToast();
   const { account } = useActiveWeb3React();
   const approved = useGetAmount(
@@ -79,14 +80,14 @@ const Create: React.FC = () => {
   );
   const payoutTokenContract = useERC20(payoutToken);
   const maxMarketAmount = useMemo(() => {
-    if (!cap || !rate) {
+    if (!cap || !minRate) {
       return undefined;
     }
     if (capToken === "payout") {
       return cap;
     }
-    return new BigNumber(cap).multipliedBy(rate).toNumber();
-  }, [cap, rate]);
+    return new BigNumber(cap).dividedBy(minRate).toNumber();
+  }, [cap, minRate, capToken]);
 
   const handleInput = (key: string) => (e) => {
     let func;
@@ -123,6 +124,9 @@ const Create: React.FC = () => {
         break;
       case "callback":
         func = setCallback;
+        break;
+      case "debt":
+        func = setDebt;
         break;
     }
 
@@ -219,14 +223,13 @@ const Create: React.FC = () => {
           )?.toFixed(0),
           price?.toFixed(0),
           minPrice?.toFixed(0),
-          95000,
+          debt * 1000,
           vesting,
           new Date(endDate).getTime() / 1000,
           bondDelay,
           scaleAdj,
         ]
       );
-      console.log("params", params);
       let tx;
       if (type === "expiry") {
         tx = await expirySdaContract.createMarket(params);
@@ -303,6 +306,26 @@ const Create: React.FC = () => {
       );
     }
   }, [quoteTokenPrice, payoutTokenPrice]);
+
+  useEffect(() => {
+    if (maxMarketAmount > 0) {
+      const duration =
+        type === "expiry"
+          ? (new Date(vestDate).getTime() - new Date().getTime()) / 1000
+          : vestPeriod * 24 * 60 * 60;
+      setDebt(
+        new BigNumber(maxMarketAmount)
+          .multipliedBy(0.25)
+          .dividedBy(
+            new BigNumber(maxMarketAmount)
+              .multipliedBy(Math.max(5 * bondDelay, 3 * 24 * 60 * 60))
+              .dividedBy(duration)
+          )
+          .multipliedBy(100)
+          .toFixed(0)
+      );
+    }
+  }, [maxMarketAmount, bondDelay, vestDate, vestPeriod, type]);
 
   useEffect(() => {
     if (quoteData?.price) {
@@ -620,6 +643,20 @@ const Create: React.FC = () => {
                   autoComplete="off"
                   isWarning={!callback}
                   onChange={handleInput("callback")}
+                />
+              </Box>
+            </Flex>
+            <Flex py="1rem">
+              <Box flex="1">
+                <Label>{t("Debt Buffer (%)")}</Label>
+                <Input
+                  id="debt-buffer"
+                  scale="lg"
+                  value={debt}
+                  autoComplete="off"
+                  isWarning={!debt}
+                  onChange={handleInput("debt-buffer")}
+                  type="number"
                 />
               </Box>
             </Flex>
