@@ -76,7 +76,8 @@ const Create: React.FC = () => {
         address: payoutToken,
       }),
     "allowance",
-    [account, type === "expiry" ? EXPIRY_TELLER_ADDRESS : TERM_TELLER_ADDRESS]
+    [account, type === "expiry" ? EXPIRY_TELLER_ADDRESS : TERM_TELLER_ADDRESS],
+    true
   );
   const payoutTokenContract = useERC20(payoutToken);
   const maxMarketAmount = useMemo(() => {
