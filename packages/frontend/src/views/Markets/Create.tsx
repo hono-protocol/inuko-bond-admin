@@ -251,7 +251,10 @@ const Create: React.FC = () => {
     try {
       const tx = await payoutTokenContract.approve(
         type === "expiry" ? EXPIRY_TELLER_ADDRESS : TERM_TELLER_ADDRESS,
-        getDecimalAmount(new BigNumber(maxMarketAmount), payoutData.decimals)
+        getDecimalAmount(
+          new BigNumber(maxMarketAmount),
+          payoutData.decimals
+        )?.toFixed(0)
       );
       await tx.wait();
     } catch (err) {
