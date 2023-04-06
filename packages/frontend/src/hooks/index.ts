@@ -3,6 +3,7 @@ import { useQuery } from "react-query";
 import { isAddress } from "utils";
 import BigNumber from "bignumber.js";
 import uniqBy from "lodash/uniqBy";
+import format from "date-fns/format";
 
 import ERC20ABI from "../config/abi/erc20.json";
 import AGGABI from "../config/abi/aggregator_abi.json";
@@ -74,20 +75,28 @@ export const useTokenDetail = (address?: string) => {
         if (symbol === "BUSD 1" || symbol === "BUSD 2") {
           return o.symbol === "busd";
         }
+        // TODO: find a way to fix this exceptional case when 2 tokens same symbol
+        if (symbol === "LIQ") {
+          return o.id === "liquidus";
+        }
+
         return o.symbol?.toLowerCase() === symbol?.toLowerCase();
       })?.id;
       const coinRes = await fetch(
-        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinId}&order=market_cap_desc&per_page=1&page=1&sparkline=false`
+        `https://api.coingecko.com/api/v3/coins/${coinId}/history?date=${format(
+          new Date(),
+          "dd-MM-yyyy"
+        )}`
       );
       const coin = await coinRes?.json();
 
       setData({
         decimals,
         symbol,
-        price: coin?.[0]?.current_price,
+        price: coin?.market_data?.current_price?.usd,
       });
     } catch (err) {
-      console.log(err);
+      console.log("Error", err);
     } finally {
       setLoading(false);
     }
@@ -275,7 +284,8 @@ export const useFetchListBonds = () => {
     try {
       const res = await fetch(process.env.REACT_APP_BOND_LIST_API);
       const resData = await res.json();
-      setData(resData?.data);
+
+      setData(resData);
     } catch (err) {
       console.log("err", err);
     }
@@ -296,7 +306,8 @@ export const useFetchBondId = (id: string) => {
     try {
       const res = await fetch(process.env.REACT_APP_BOND_LIST_API);
       const resData = await res.json();
-      setData(resData?.data?.find((o) => o.id == id));
+
+      setData(resData?.find((o) => o.id == id));
     } catch (err) {
       console.log("err", err);
     }
