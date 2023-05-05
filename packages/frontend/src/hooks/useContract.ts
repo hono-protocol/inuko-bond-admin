@@ -73,7 +73,7 @@ export const useIfoV2Contract = (address: string) => {
 
 export const useERC20 = (address?: string) => {
   const { library } = useActiveWeb3React();
-  console.log("useERC20", address);
+
   return useMemo(
     () => !!address && getBep20Contract(address, library.getSigner()),
     [address, library]

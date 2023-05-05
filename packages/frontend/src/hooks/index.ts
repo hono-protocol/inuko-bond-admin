@@ -22,6 +22,7 @@ import useToast from "./useToast";
 import { Contract } from "ethers";
 import { ERC20_ABI } from "config/abi/erc20";
 import { fetch1155Txs } from "./graph";
+import { getLatestPrice } from "utils/moralis";
 
 export const useGeckoList = () => {
   return useQuery(
@@ -59,10 +60,10 @@ export const useTokenDetail = (address?: string) => {
     useState<{ symbol?: string; decimals?: number; price?: any }>();
   const [loading, setLoading] = useState(false);
   const tokenContract = useContract(address, ERC20ABI, true);
-  const { data: coinList } = useGeckoList();
+  // const { data: coinList } = useGeckoList();
 
   const fetchData = useCallback(async () => {
-    if (!isAddress(address) || !coinList) {
+    if (!isAddress(address)) {
       return setData(undefined);
     }
 
@@ -70,37 +71,19 @@ export const useTokenDetail = (address?: string) => {
       setLoading(true);
       const decimals = await tokenContract.decimals();
       const symbol = await tokenContract.symbol();
-      const coinId = coinList.find((o) => {
-        // TODO: remove this
-        if (symbol === "BUSD 1" || symbol === "BUSD 2") {
-          return o.symbol === "busd";
-        }
-        // TODO: find a way to fix this exceptional case when 2 tokens same symbol
-        if (symbol === "LIQ") {
-          return o.id === "liquidus";
-        }
-
-        return o.symbol?.toLowerCase() === symbol?.toLowerCase();
-      })?.id;
-      const coinRes = await fetch(
-        `https://api.coingecko.com/api/v3/coins/${coinId}/history?date=${format(
-          new Date(),
-          "dd-MM-yyyy"
-        )}`
-      );
-      const coin = await coinRes?.json();
+      const price = await getLatestPrice(address);
 
       setData({
         decimals,
         symbol,
-        price: coin?.market_data?.current_price?.usd,
+        price,
       });
     } catch (err) {
       console.log("Error", err);
     } finally {
       setLoading(false);
     }
-  }, [address, coinList]);
+  }, [address]);
 
   useEffect(() => {
     fetchData();
